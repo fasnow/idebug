@@ -1,6 +1,9 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/mattn/go-colorable"
+)
 
 const (
 	reset  = "\033[0m"
@@ -10,20 +13,25 @@ const (
 )
 
 func Error(err error) {
-	fmt.Println(red + "[!] " + reset + err.Error())
+	writer := colorable.NewColorableStdout()
+	fmt.Fprintln(writer, red+"[!] "+reset+err.Error())
 }
 
 func Success(str string) {
-	fmt.Println(green + "[+] " + reset + str)
+	writer := colorable.NewColorableStdout()
+	fmt.Fprintln(writer, green+"[+] "+reset+str)
 }
 
 func Info(str string) {
-	fmt.Println("[!] " + str)
+	writer := colorable.NewColorableStdout()
+	fmt.Fprintln(writer, "[!] "+str)
 }
 func Warning(str string) {
-	fmt.Println(red + "[!] " + reset + str)
+	writer := colorable.NewColorableStdout()
+	fmt.Fprintln(writer, red+"[!] "+reset+str)
 }
 
 func Println(any string) {
-	fmt.Println(any)
+	writer := colorable.NewColorableStdout()
+	fmt.Fprintln(writer, writer, any)
 }

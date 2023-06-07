@@ -59,7 +59,7 @@ var usageMap = map[string]command{
 			{name: "--uid", value: "", usage: "根据用户ID查看用户详情"},
 			{name: "--did", value: "", usage: "根据部门ID查看所有用户详情 (保存至dept_users.xlsx)"},
 			{name: "--re", value: "", usage: "是否递归查询 (默认 否),仅对 --did 生效"},
-			{name: "--print", value: "", usage: "输出到控制台数目的数目 (默认 5),仅对 --did 生效"},
+			{name: "--print", value: "", usage: "指定输出到控制台的数目 (默认 5),仅对 --did 生效"},
 			{name: "--dump", value: "", usage: "导出所有部门和用户 (保存至dept_tree_users.html和dept_tree_users.xlsx)"},
 		},
 		childCommand: []command{},
