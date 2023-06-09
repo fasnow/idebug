@@ -58,7 +58,7 @@ func (p *Client) executor(in string) bool {
 			break
 		}
 		if config.Info.CorpSecret == "" {
-			utils.Warning("corpsecret")
+			utils.Warning("请先设置corpsecret")
 			break
 		}
 		token, i, _, err := p.wxClient.GetAccessToken(config.Info.CorpId, config.Info.CorpSecret)
@@ -68,11 +68,12 @@ func (p *Client) executor(in string) bool {
 		}
 		config.Info.AccessToken = token
 		config.Info.ExpireIn = i
-		_, err = p.wxClient.GetAccessTokenInfoByAccessToken(token)
-		if err != nil {
-			utils.Error(err)
-			break
-		}
+		// 现在需要登录才能调用且只能查询登录企业的access_token权限
+		//_, err = p.wxClient.GetAccessTokenInfoByAccessToken(token)
+		//if err != nil {
+		//	utils.Error(err)
+		//	break
+		//}
 		info := p.wxClient.GetClientInfo()
 		config.Info.App = info.App
 		config.Info.Tag = info.Tag
@@ -111,11 +112,11 @@ func showInfo() {
 	fmt.Println(fmt.Sprintf("%-17s: %s", "corpsecret", config.Info.CorpSecret))
 	fmt.Println(fmt.Sprintf("%-17s: %s", "access_token", config.Info.AccessToken))
 	fmt.Println(fmt.Sprintf("%-17s: %s", "expire_in (s)", expireIn))
-	fmt.Println(fmt.Sprintf("%-15s: %s", "来源", config.Info.Resource))
-	fmt.Println(fmt.Sprintf("%-10s: %s", "通讯录范围 - 部门", strings.Join(config.Info.Department, "、")))
-	fmt.Println(fmt.Sprintf("%-10s: %s", "通讯录范围 - 成员", strings.Join(config.Info.Member, "、")))
-	fmt.Println(fmt.Sprintf("%-10s: %s", "通讯录范围 - 标签", strings.Join(config.Info.Tag, "、")))
-	fmt.Println(fmt.Sprintf("%-13s: %s", "应用权限", strings.Join(config.Info.App, "、")))
-	fmt.Println(fmt.Sprintf("%-13s: %s", "可信域名", strings.Join(config.Info.ReliableDomain, "、")))
+	//fmt.Println(fmt.Sprintf("%-15s: %s", "来源", config.Info.Resource))
+	//fmt.Println(fmt.Sprintf("%-10s: %s", "通讯录范围 - 部门", strings.Join(config.Info.Department, "、")))
+	//fmt.Println(fmt.Sprintf("%-10s: %s", "通讯录范围 - 成员", strings.Join(config.Info.Member, "、")))
+	//fmt.Println(fmt.Sprintf("%-10s: %s", "通讯录范围 - 标签", strings.Join(config.Info.Tag, "、")))
+	//fmt.Println(fmt.Sprintf("%-13s: %s", "应用权限", strings.Join(config.Info.App, "、")))
+	//fmt.Println(fmt.Sprintf("%-13s: %s", "可信域名", strings.Join(config.Info.ReliableDomain, "、")))
 	fmt.Printf("%s\n", strings.Repeat("=", 20))
 }
