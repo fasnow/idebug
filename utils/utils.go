@@ -24,7 +24,7 @@ func Banner() {
 	   / /   / / / / __/ / __  / / / / / __
 	 _/ /   / /_/ / /___/ /_/ / /_/ / /_/ /
 	/___/  /_____/_____/_____/\____/\____/
-		@github.com/fasnow v1.0.0
+		@github.com/fasnow v1.0.1
 用于通过企业微信的 corpid 和 corpsecret 自动获取access_token以调试接口`
 	fmt.Println(s)
 	Warning("仅用于开发人员用作接口调试,请勿用作其他非法用途")
