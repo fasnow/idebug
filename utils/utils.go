@@ -3,8 +3,13 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"github.com/buger/jsonparser"
+	"github.com/coreos/go-semver/semver"
 	"github.com/tealeg/xlsx"
+	"idebug/config"
+	"idebug/ghttp"
 	"idebug/plugin"
+	http2 "net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -24,10 +29,57 @@ func Banner() {
 	   / /   / / / / __/ / __  / / / / / __
 	 _/ /   / /_/ / /___/ /_/ / /_/ / /_/ /
 	/___/  /_____/_____/_____/\____/\____/
-		@github.com/fasnow v1.0.1
+		@github.com/fasnow version
 用于通过企业微信的 corpid 和 corpsecret 自动获取access_token以调试接口`
+	s = strings.Replace(s, "version", config.Version, 1)
 	fmt.Println(s)
 	Warning("仅用于开发人员用作接口调试,请勿用作其他非法用途")
+}
+
+func CheckUpdate() (string, string, string) {
+	var httpClient = &ghttp.GHttp{}
+	request, err := http2.NewRequest("GET", "https://api.github.com/repos/fasnow/idebug/releases/latest", nil)
+	//request.Header.Set("User-Agent", "1")
+	if err != nil {
+		return "", "", ""
+	}
+	response, err := httpClient.Do(request, ghttp.Options{Timeout: 3 * time.Second})
+	if err != nil {
+		return "", "", ""
+	}
+	if response.StatusCode != 200 {
+		return "", "", ""
+	}
+	body, err := ghttp.GetResponseBody(response.Body)
+	if err != nil {
+		return "", "", ""
+	}
+	latestVersion, err := jsonparser.GetString(body, "tag_name")
+	if err != nil {
+		return "", "", ""
+	}
+	currentVersion, err := semver.NewVersion(config.Version[1:])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	v2, err := semver.NewVersion(latestVersion[1:])
+	if err != nil {
+		fmt.Println(err)
+	}
+	// 比较版本
+	if v2.Compare(*currentVersion) < 1 {
+		return "", "", ""
+	}
+	releaseUrl, err := jsonparser.GetString(body, "html_url")
+	if err != nil {
+		return "", "", ""
+	}
+	content, err := jsonparser.GetString(body, "body")
+	if err != nil {
+		return "", "", ""
+	}
+	return latestVersion, releaseUrl, content
 }
 
 // IsFileExists 判断文件是否存在

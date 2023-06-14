@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/buger/jsonparser"
-	http2 "idebug/http"
+	"github.com/fasnow/ghttp"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -55,6 +55,8 @@ const getUserIDByEmail = "https://qyapi.weixin.qq.com/cgi-bin/user/get_userid_by
 
 // 获取企业微信接口IP段 ?access_token=ACCESS_TOKEN
 const getAPIDomainCIDRUrl = "https://qyapi.weixin.qq.com/cgi-bin/get_api_domain_ip"
+
+var httpClient = ghttp.Client{}
 
 var roleGroup = map[int]string{
 	-1: "未知管理组",
@@ -201,14 +203,14 @@ func (w *WeChat) GetAccessToken(corpId, corpSecret string) (string, int, int, er
 	params.Add("corpsecret", corpSecret)
 	request, _ := http.NewRequest("GET", fmt.Sprintf("%s?%s", getAccessTokenUrl, params.Encode()), nil)
 	request.Header.Set("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return "", -1, -1, err
 	}
 	if response.StatusCode != 200 {
 		return "", -1, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return "", -1, -1, err
 	}
@@ -249,14 +251,14 @@ func (w *WeChat) GetAccessTokenInfoByAccessToken(accessToken string) (*AccessTok
 		return nil, err
 	}
 	request.Header.Set("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
 	if response.StatusCode != 200 {
 		return nil, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -325,15 +327,14 @@ func (w *WeChat) GetDepartmentListById(id int) ([]WxDepartment, int, error) {
 	if err != nil {
 		return nil, -1, err
 	}
-	request.Header.Add("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, -1, err
 	}
 	if response.StatusCode != 200 {
 		return nil, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}
@@ -408,15 +409,14 @@ func GetDepartmentById(accessToken string, id int) ([]WxDepartment, int, error) 
 	if err != nil {
 		return nil, -1, err
 	}
-	request.Header.Add("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, -1, err
 	}
 	if response.StatusCode != 200 {
 		return nil, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}
@@ -451,15 +451,14 @@ func GetSubDepartmentIdListById(accessToken string, id int) ([]WxDepartment, int
 	if err != nil {
 		return nil, -1, err
 	}
-	request.Header.Add("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, -1, err
 	}
 	if response.StatusCode != 200 {
 		return nil, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}
@@ -487,15 +486,14 @@ func GetDepartmentDetail(accessToken string, id int) (*WxDepartment, int, error)
 	if err != nil {
 		return nil, -1, err
 	}
-	request.Header.Add("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, -1, err
 	}
 	if response.StatusCode != 200 {
 		return nil, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}
@@ -528,15 +526,14 @@ func GetDepartmentSimpleUser(accessToken string, id int, fetchChild bool) ([]WxS
 	if err != nil {
 		return nil, -1, err
 	}
-	request.Header.Add("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, -1, err
 	}
 	if response.StatusCode != 200 {
 		return nil, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}
@@ -569,15 +566,14 @@ func GetDepartmentUser(accessToken string, id int, fetchChild bool) ([]WxUser, i
 	if err != nil {
 		return nil, -1, err
 	}
-	request.Header.Add("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, -1, err
 	}
 	if response.StatusCode != 200 {
 		return nil, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}
@@ -606,14 +602,14 @@ func GetDepartmentSpecifiedUser(accessToken string, userId string) (*WxUser, int
 		return nil, -1, err
 	}
 	request.Header.Add("User-Agent", "")
-	response, err := http2.Client.Do(request)
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return nil, -1, err
 	}
 	if response.StatusCode != 200 {
 		return nil, -1, errors.New(response.Status)
 	}
-	body, err := http2.GetResponseBody(response.Body)
+	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
 		return nil, -1, err
 	}

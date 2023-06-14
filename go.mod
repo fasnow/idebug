@@ -10,9 +10,11 @@ require (
 
 require (
 	github.com/cilium/ebpf v0.7.0 // indirect
+	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/cosiner/argv v0.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/derekparker/trie v0.0.0-20221213183930-4c74548207f4 // indirect
+	github.com/fasnow/ghttp v0.0.0-20230614034253-397dd09c5c8d // indirect
 	github.com/go-delve/delve v1.20.2 // indirect
 	github.com/go-delve/liner v1.2.3-0.20220127212407-d32d89dd2a5d // indirect
 	github.com/google/go-dap v0.7.0 // indirect

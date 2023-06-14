@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"idebug/config"
-	"idebug/http"
+	"idebug/ghttp"
 	"idebug/plugin"
 	"idebug/utils"
 	"strconv"
@@ -36,6 +36,21 @@ var Root = &cobra.Command{
 	},
 }
 
+var Update = &cobra.Command{
+	Use: "update",
+	Run: func(cmd *cobra.Command, args []string) {
+		version, releaseUrl, content := utils.CheckUpdate()
+		if version != "" {
+			s := "最新版本: " + version
+			s += "\n    下载地址: " + releaseUrl
+			s += "\n    更新内容: " + content
+			utils.Notice(s)
+			return
+		}
+		utils.Success("当前已是最新版本")
+	},
+}
+
 var Help = &cobra.Command{Run: func(cmd *cobra.Command, args []string) {
 	ShowAllUsage()
 }}
@@ -44,14 +59,14 @@ var Proxy = &cobra.Command{
 	Use: "proxy",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
-			err := http.SetGlobalProxy("")
+			err := ghttp.SetGlobalProxy("")
 			if err != nil {
 				utils.Error(err)
 				return
 			}
 			config.Proxy = ""
 		} else {
-			err := http.SetGlobalProxy(args[0])
+			err := ghttp.SetGlobalProxy(args[0])
 			if err != nil {
 				utils.Error(err)
 				return
@@ -282,6 +297,15 @@ var User = &cobra.Command{
 				utils.Error(err)
 				return
 			}
+			depts := []string{}
+			for _, deptId := range user.Department {
+				detail, _, err := plugin.GetDepartmentDetail(config.Info.AccessToken, deptId)
+				if err != nil {
+					break
+				}
+				depts = append(depts, fmt.Sprintf("%s (ID:%d)", detail.Name, deptId))
+			}
+
 			fmt.Printf("%s\n", strings.Repeat("=", 20))
 			fmt.Printf("%-10s: %s\n", "ID", user.UserId)
 			fmt.Printf("%-8s: %s\n", "姓名", user.Name)
@@ -289,7 +313,7 @@ var User = &cobra.Command{
 			for _, num := range user.Department {
 				s = append(s, strconv.Itoa(num))
 			}
-			fmt.Printf("%-5s: %s\n", "所属部门ID", strings.Join(s, "、"))
+			fmt.Printf("%-6s: %s\n", "所属部门", strings.Join(depts, "、"))
 			fmt.Printf("%-8s: %s\n", "职位", user.Position)
 			fmt.Printf("%-8s: %s\n", "手机", user.Mobile)
 			fmt.Printf("%-8s: %s\n", "邮箱", user.Email)
@@ -449,7 +473,7 @@ func init() {
 
 	//msiSet(Help, "")
 	Root.AddCommand(Help)
-
+	Root.AddCommand(Update)
 	msiSet(Root, "root")
 }
 

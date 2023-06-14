@@ -19,9 +19,12 @@ type command struct {
 	childCommand []command
 }
 
-var usageSort = []string{"help", "run", "info", "set", "user", "dp", "exit"}
+var usageSort = []string{"help", "update", "run", "info", "set", "user", "dp", "exit"}
 
 var usageMap = map[string]command{
+	"update": {
+		name: "update", arg: "", usage: "检测最新版本",
+		childCommand: []command{}},
 	"help": {
 		name: "help,--help,-h", arg: "", usage: "查看帮助信息",
 		childCommand: []command{}},

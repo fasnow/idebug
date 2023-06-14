@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	reset  = "\033[0m"
-	red    = "\033[31m"
-	green  = "\033[32m"
-	yellow = "\033[33m"
+	reset = "\033[0m"
+	red   = "\033[31m"
+	green = "\033[32m"
+	blue  = "\033[34m"
 )
 
 func Error(err error) {
@@ -34,4 +34,9 @@ func Warning(str string) {
 func Println(any string) {
 	writer := colorable.NewColorableStdout()
 	fmt.Fprintln(writer, writer, any)
+}
+
+func Notice(str string) {
+	writer := colorable.NewColorableStdout()
+	fmt.Fprintln(writer, green+"[+] "+str+reset)
 }
