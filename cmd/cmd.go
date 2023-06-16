@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/fasnow/ghttp"
 	"github.com/spf13/cobra"
 	"idebug/config"
-	"idebug/ghttp"
 	"idebug/plugin"
 	"idebug/utils"
 	"strconv"

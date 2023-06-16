@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/buger/jsonparser"
 	"github.com/coreos/go-semver/semver"
+	"github.com/fasnow/ghttp"
 	"github.com/tealeg/xlsx"
 	"idebug/config"
-	"idebug/ghttp"
 	"idebug/plugin"
 	http2 "net/http"
 	"os"
@@ -37,7 +37,7 @@ func Banner() {
 }
 
 func CheckUpdate() (string, string, string) {
-	var httpClient = &ghttp.GHttp{}
+	var httpClient = &ghttp.Client{}
 	request, err := http2.NewRequest("GET", "https://api.github.com/repos/fasnow/idebug/releases/latest", nil)
 	//request.Header.Set("User-Agent", "1")
 	if err != nil {
