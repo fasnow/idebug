@@ -2,18 +2,20 @@
 // +build test
 
 // 在测试文件中添加构建标签
-package test
+package main
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/chzyer/readline/runes"
 	"github.com/fasnow/ghttp"
 	lark "github.com/larksuite/oapi-sdk-go/v3"
 	larkcontact "github.com/larksuite/oapi-sdk-go/v3/service/contact/v3"
 	"github.com/nsf/termbox-go"
 	"idebug/plugin/feishu"
 	"log"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -56,6 +58,68 @@ func TestName(t *testing.T) {
 	//tmp.UserID = "userId"
 	//postData, _ := json.Marshal(tmp)
 	//t.Log(string(postData))
+}
+
+type twidth struct {
+	r      []rune
+	length int
+}
+
+func TestRuneWidth(t *testing.T) {
+	ru := []twidth{
+		{[]rune("☭"), 1},
+		{[]rune("a"), 1},
+		{[]rune("你"), 2},
+		{runes.ColorFilter([]rune("☭\033[13;1m你")), 3},
+	}
+	for _, r := range ru {
+		if w := runes.WidthAll(r.r); w != r.length {
+			t.Fatal("result not expect", r.r, r.length, w)
+		}
+	}
+}
+
+type tagg struct {
+	r      [][]rune
+	e      [][]rune
+	length int
+}
+
+func TestAggRunes(t *testing.T) {
+	ru := []tagg{
+		{
+			[][]rune{[]rune("ab"), []rune("a"), []rune("abc")},
+			[][]rune{[]rune("b"), []rune(""), []rune("bc")},
+			1,
+		},
+		{
+			[][]rune{[]rune("addb"), []rune("ajkajsdf"), []rune("aasdfkc")},
+			[][]rune{[]rune("ddb"), []rune("jkajsdf"), []rune("asdfkc")},
+			1,
+		},
+		{
+			[][]rune{[]rune("ddb"), []rune("ajksdf"), []rune("aasdfkc")},
+			[][]rune{[]rune("ddb"), []rune("ajksdf"), []rune("aasdfkc")},
+			0,
+		},
+		{
+			[][]rune{[]rune("ddb"), []rune("ddajksdf"), []rune("ddaasdfkc")},
+			[][]rune{[]rune("b"), []rune("ajksdf"), []rune("aasdfkc")},
+			2,
+		},
+	}
+	for _, r := range ru {
+		same, off := runes.Aggregate(r.r)
+		if off != r.length {
+			t.Fatal("result not expect", off)
+		}
+		if len(same) != off {
+			t.Fatal("result not expect", same)
+		}
+		if !reflect.DeepEqual(r.r, r.e) {
+			t.Fatal("result not expect")
+		}
+	}
 }
 
 func TestReadLine(t *testing.T) {

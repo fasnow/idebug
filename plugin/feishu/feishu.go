@@ -2,10 +2,10 @@ package feishu
 
 import (
 	"context"
-	"github.com/fasnow/ghttp"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/fasnow/ghttp"
 	"idebug/plugin"
 	"idebug/utils"
 	"net/http"
@@ -50,7 +50,6 @@ type Client struct {
 	User       *user
 	cache      *utils.Cache // 保存access_token
 	http       *ghttp.Client
-	ctx        *context.Context
 }
 
 func NewClient() *Client {
@@ -62,8 +61,8 @@ func NewClient() *Client {
 	return f
 }
 
-func (client *Client) Context(ctx *context.Context) {
-	client.ctx = ctx
+func (client *Client) SetContext(ctx *context.Context) {
+	client.http.Context = ctx
 }
 
 func (client *Client) Set(appId, appSecret string) {
@@ -107,6 +106,9 @@ func (client *Client) GetNewAuthScope(req *GetAuthScopeReq) (*config, error) {
 	didType := req.req.QueryParams.Get("department_id_type")
 	uidType := req.req.QueryParams.Get("user_id_type")
 	for _, deptId := range departmentScope {
+		//if client.http.Context!=nil && client.http.Context{
+		//
+		//}
 		req1 := NewGetDepartmentReqBuilder(client).
 			DepartmentIdType(didType).
 			DepartmentId(*deptId).

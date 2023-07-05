@@ -1,7 +1,7 @@
 //go:build test
 // +build test
 
-package test
+package main
 
 import (
 	"encoding/json"

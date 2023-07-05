@@ -121,7 +121,7 @@ func (u *user) Get(req *GetUserReq) (*UserEntry, error) {
 		return nil, err
 	}
 	request.Header.Add("User-Agent", "")
-	response, err := httpClient.Do(request)
+	response, err := u.client.http.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (u *user) GetUsersByDepartmentId(req *GetUsersByDepartmentIdReq) ([]*UserEn
 	if err != nil {
 		return nil, err
 	}
-	response, err := httpClient.Do(request)
+	response, err := u.client.http.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +285,7 @@ func (u *user) GetUsersSimplifiedByDepartmentId(req *GetUsersSimplifiedByDepartm
 	if err != nil {
 		return nil, err
 	}
-	response, err := httpClient.Do(request)
+	response, err := u.client.http.Do(request)
 	if err != nil {
 		return nil, err
 	}

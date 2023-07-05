@@ -57,8 +57,6 @@ const getUserIDByEmail = "https://qyapi.weixin.qq.com/cgi-bin/user/get_userid_by
 // 获取企业微信接口IP段 ?access_token=ACCESS_TOKEN
 const getAPIDomainCIDRUrl = "https://qyapi.weixin.qq.com/cgi-bin/get_api_domain_ip"
 
-var httpClient = ghttp.Client{}
-
 var roleGroup = map[int]string{
 	-1: "未知管理组",
 	1:  "应用",
@@ -113,7 +111,6 @@ type Client struct {
 	User       *user
 	cache      *utils.Cache // 保存access_token
 	http       *ghttp.Client
-	ctx        *context.Context
 }
 
 func NewWxClient() *Client {
@@ -125,8 +122,8 @@ func NewWxClient() *Client {
 	return client
 }
 
-func (client *Client) Context(ctx *context.Context) {
-
+func (client *Client) SetContext(ctx *context.Context) {
+	client.http.Context = ctx
 }
 
 func (client *Client) Set(corpId, corpSecret string) {
@@ -210,7 +207,7 @@ func (client *Client) getAccessToken() (string, int, error) {
 		return "", 0, err
 	}
 	request.Header.Set("User-Agent", "")
-	response, err := httpClient.Do(request)
+	response, err := client.http.Do(request)
 	if response.StatusCode != 200 {
 		return "", 0, errors.New(response.Status)
 	}

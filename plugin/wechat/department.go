@@ -69,7 +69,7 @@ func (d *department) Get(req *GetDepartmentReq) (*DepartmentEntry, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := httpClient.Do(request)
+	response, err := d.client.http.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (d *department) GetList(req *GetDepartmentListReq) ([]*DepartmentEntry, err
 	if err != nil {
 		return nil, err
 	}
-	response, err := httpClient.Do(request)
+	response, err := d.client.http.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func (d *department) GetIdList(req *GetDepartmentIdListReq) ([]*DepartmentEntryS
 	if err != nil {
 		return nil, err
 	}
-	response, err := httpClient.Do(request)
+	response, err := d.client.http.Do(request)
 	if err != nil {
 		return nil, err
 	}

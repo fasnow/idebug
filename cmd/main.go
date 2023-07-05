@@ -26,7 +26,8 @@ const (
 
 var (
 	ModuleChangedCh       *chan bool
-	ctx, cancel           = context.WithCancel(context.Background())
+	ctx, Cancel           = context.WithCancel(context.Background())
+	HttpCanceled          bool
 	CurrentModule         *Module
 	WxClient              *wechat.Client
 	FeiShuClient          *fs.Client
@@ -207,14 +208,14 @@ func (cli *mainCli) newUse() *cobra.Command {
 				*CurrentModule = FeiShuModule
 				if FeiShuClient == nil {
 					FeiShuClient = fs.NewClient()
-					FeiShuClient.Context(&ctx)
+					FeiShuClient.SetContext(&ctx)
 				}
 				break
 			case WxModule:
 				*CurrentModule = WxModule
 				if WxClient == nil {
 					WxClient = wechat.NewWxClient()
-					WxClient.Context(&ctx)
+					WxClient.SetContext(&ctx)
 				}
 				break
 			default:
