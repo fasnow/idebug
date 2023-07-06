@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -107,7 +108,13 @@ func (cli *wechatCli) newRun() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			_, err := WxClient.GetAccessToken()
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			cli.showClientConfig()
@@ -173,7 +180,13 @@ func (cli *wechatCli) newDp() *cobra.Command {
 			req := wechat.NewGetDepartmentReqBuilder(WxClient).DepartmentId(args[0]).Build()
 			deptInfo, err := WxClient.Department.Get(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			fmt.Printf("%s\n", strings.Repeat("=", 20))
@@ -207,6 +220,9 @@ func (cli *wechatCli) newDpLs() *cobra.Command {
 					depts, err = WxClient.Department.GetIdList(req)
 				}
 				if err != nil {
+					if errors.Is(err, context.Canceled) {
+						return
+					}
 					if i == retry-1 {
 						logger.Error(logger.FormatError(err))
 						return
@@ -214,6 +230,9 @@ func (cli *wechatCli) newDpLs() *cobra.Command {
 					continue
 				}
 				break
+			}
+			if HttpCanceled {
+				return
 			}
 			if len(depts) == 0 {
 				logger.Warning("无可用部门信息")
@@ -256,13 +275,19 @@ func (cli *wechatCli) newDpTree() *cobra.Command {
 					departments, err = WxClient.Department.GetList(req)
 				}
 				if err != nil {
-					if i < retry-1 {
+					if errors.Is(err, context.Canceled) {
+						return
+					}
+					if i == retry-1 {
 						logger.Error(logger.FormatError(err))
 						return
 					}
 					continue
 				}
 				break
+			}
+			if HttpCanceled {
+				return
 			}
 			if len(departments) == 0 {
 				logger.Warning("无可用部门信息")
@@ -315,7 +340,13 @@ func (cli *wechatCli) newUser() *cobra.Command {
 			req := wechat.NewGetUserReqBuilder(WxClient).UserId(args[0]).Build()
 			userInfo, err := WxClient.User.Get(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			cli.showUserInfo(userInfo, false)
@@ -338,6 +369,13 @@ func (cli *wechatCli) newUserLs() *cobra.Command {
 			req := wechat.NewGetUsersByDepartmentIdReqBuilder(WxClient).DepartmentId(args[0]).Fetch(recurse).Build()
 			userList, err := WxClient.User.GetUsersByDepartmentId(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
+				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			if len(userList) == 0 {
@@ -387,6 +425,9 @@ func (cli *wechatCli) newDump() *cobra.Command {
 					deptList, err = WxClient.Department.GetList(req)
 				}
 				if err != nil {
+					if errors.Is(err, context.Canceled) {
+						return
+					}
 					if i == retry-1 {
 						logger.Error(logger.FormatError(err))
 						return
@@ -394,6 +435,9 @@ func (cli *wechatCli) newDump() *cobra.Command {
 					continue
 				}
 				break
+			}
+			if HttpCanceled {
+				return
 			}
 			if len(deptList) == 0 {
 				logger.Warning("无可用部门信息")
@@ -419,6 +463,9 @@ func (cli *wechatCli) newDump() *cobra.Command {
 				req := wechat.NewGetUsersByDepartmentIdReqBuilder(WxClient).DepartmentId(strconv.Itoa(departmentTreeResource[0].ID)).Fetch(true).Build()
 				userList, err = WxClient.User.GetUsersByDepartmentId(req)
 				if err != nil {
+					if errors.Is(err, context.Canceled) {
+						return
+					}
 					if i == retry-1 {
 						logger.Error(logger.FormatError(err))
 						return
@@ -426,6 +473,9 @@ func (cli *wechatCli) newDump() *cobra.Command {
 					continue
 				}
 				break
+			}
+			if HttpCanceled {
+				return
 			}
 
 			// 将用户插入到部门树中

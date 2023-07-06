@@ -123,32 +123,35 @@ func Banner() {
 	logger.Warning("仅用于开发人员用作接口调试,请勿用作其他非法用途")
 }
 
-func CheckUpdate() (string, string, string) {
+// CheckUpdate latestVersion, releaseUrl, publishTime, content
+func CheckUpdate() (string, string, string, string) {
 	var httpClient = &ghttp.Client{}
 	request, err := http.NewRequest("GET", "https://api.github.com/repos/fasnow/idebug/releases/latest", nil)
 	//request.Header.Set("User-Agent", "1")
 	if err != nil {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	response, err := httpClient.Do(request, ghttp.Options{Timeout: 3 * time.Second})
 	if err != nil {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	if response.StatusCode != 200 {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	body, err := ghttp.GetResponseBody(response.Body)
 	if err != nil {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	latestVersion, err := jsonparser.GetString(body, "tag_name")
 	if err != nil {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	currentVersion, err := semver.NewVersion(config.Version[1:])
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	publishTime, err := jsonparser.GetString(body, "published_at")
 
 	v2, err := semver.NewVersion(latestVersion[1:])
 	if err != nil {
@@ -156,15 +159,15 @@ func CheckUpdate() (string, string, string) {
 	}
 	// 比较版本
 	if v2.Compare(*currentVersion) < 1 {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	releaseUrl, err := jsonparser.GetString(body, "html_url")
 	if err != nil {
-		return "", "", ""
+		return "", "", "", ""
 	}
 	content, err := jsonparser.GetString(body, "body")
 	if err != nil {
-		return "", "", ""
+		return "", "", "", ""
 	}
-	return latestVersion, releaseUrl, content
+	return latestVersion, releaseUrl, publishTime, content
 }

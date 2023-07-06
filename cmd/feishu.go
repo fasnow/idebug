@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -183,8 +184,14 @@ func (cli *feiShuCli) newRun() *cobra.Command {
 				Build()
 			_, err := FeiShuClient.GetNewAuthScope(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Warning("获取tenant_access_token通信录授权范围失败")
 				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			departmentIdTypeCache = departmentIdType
@@ -231,14 +238,22 @@ func (cli *feiShuCli) newDp() *cobra.Command {
 				primaryMemberCount int
 				hrbps              []string
 			)
+			var deptInfo fs.DepartmentEntry
+			var err error
 			req := fs.NewGetDepartmentReqBuilder(FeiShuClient).
 				DepartmentId(args[0]).
 				DepartmentIdType(didType).
 				UserIdType(uidType).
 				Build()
-			deptInfo, err := FeiShuClient.Department.Get(req)
+			deptInfo, err = FeiShuClient.Department.Get(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			if deptInfo.Status.IsDeleted {
@@ -261,8 +276,15 @@ func (cli *feiShuCli) newDp() *cobra.Command {
 				UserIdType(uidType).
 				Build()
 			parentDeptInfo, err := FeiShuClient.Department.Get(req)
-			if err == nil {
+			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
+			} else {
 				parentName = parentDeptInfo.Name
+			}
+			if HttpCanceled {
+				return
 			}
 			if leaderUserId != "" {
 				req := fs.NewGetUserReqBuilder(FeiShuClient).
@@ -281,10 +303,17 @@ func (cli *feiShuCli) newDp() *cobra.Command {
 					Build()
 				leaderInfo, err := FeiShuClient.User.Get(req)
 				if err != nil {
+					if errors.Is(err, context.Canceled) {
+						return
+					}
 					leaders = append(leaders, fmt.Sprintf("%s: %s", userIdTypeValue, leader.LeaderID))
 					continue
+				} else {
+					leaders = append(leaders, fmt.Sprintf("%s(%s: %s)", leaderInfo.Name, userIdTypeValue, leader.LeaderID))
 				}
-				leaders = append(leaders, fmt.Sprintf("%s(%s: %s)", leaderInfo.Name, userIdTypeValue, leader.LeaderID))
+				if HttpCanceled {
+					return
+				}
 			}
 			memberCount = deptInfo.MemberCount
 			primaryMemberCount = deptInfo.PrimaryMemberCount
@@ -376,7 +405,13 @@ func (cli *feiShuCli) newUser() *cobra.Command {
 				DepartmentIdType(departmentIdTypeMap[departmentIdType]).Build()
 			userInfo, err := FeiShuClient.User.Get(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			cli.showUserInfo(*userInfo, false)
@@ -411,7 +446,13 @@ func (cli *feiShuCli) newUserLs() *cobra.Command {
 				Build()
 			userList, err := FeiShuClient.User.GetUsersByDepartmentId(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Error(logger.FormatError(err))
+				return
+			}
+			if HttpCanceled {
 				return
 			}
 			length := len(userList)
@@ -463,6 +504,9 @@ func (cli *feiShuCli) newEmailPasswordUpdate() *cobra.Command {
 				Build()
 			err := FeiShuClient.User.EmailPasswordUpdate(req)
 			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
 				logger.Error(logger.FormatError(err))
 				return
 			}
@@ -490,7 +534,7 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 			var didType = departmentIdTypeMap[departmentIdType]
 			conf := FeiShuClient.GetAuthScopeFromCache()
 			//根据指定部门ID先获取子部门列表
-			var isTerminal bool
+			var isErrorOcurred bool
 			var deptIds []string
 			if len(args) == 0 {
 				for deptId := range conf.DepartmentScope {
@@ -506,7 +550,6 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 					User:            []*fs.UserEntry{},
 					Children:        []*FeiShuDepartmentNode{},
 				}
-
 				var deptInfo fs.DepartmentEntry
 				var err error
 				for i := 0; i < retry; i++ {
@@ -521,6 +564,9 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 						Build()
 					deptInfo, err = FeiShuClient.Department.Get(req)
 					if err != nil {
+						if errors.Is(err, context.Canceled) {
+							return
+						}
 						if i == retry-1 {
 							logger.Error(logger.FormatError(err))
 							logger.Info(fmt.Sprintf("部门[%s]信息获取失败,终止获取", deptId))
@@ -532,6 +578,9 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 						continue
 					}
 					break
+				}
+				if HttpCanceled {
+					return
 				}
 				deptNode.Name = deptInfo.Name
 				deptNode.ZhCnName = deptInfo.I18NName.ZhCn
@@ -562,6 +611,9 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 							Build()
 						userInfo, err := FeiShuClient.User.Get(req)
 						if err != nil {
+							if errors.Is(err, context.Canceled) {
+								return
+							}
 							if i == retry-1 {
 								logger.Error(logger.FormatError(err))
 								logger.Info(fmt.Sprintf("部门[%s]主管用户信息获取失败,将会继续执行...", deptId))
@@ -575,8 +627,10 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 						deptNode.LeaderUserName = userInfo.Name
 						break
 					}
+					if HttpCanceled {
+						return
+					}
 				}
-
 				deptNode.ChatID = deptInfo.ChatID
 
 				//获取部门用户
@@ -587,6 +641,9 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 						DepartmentIdType(didType).UserIdType(uidType).Build()
 					users, err := FeiShuClient.User.GetUsersByDepartmentId(req1)
 					if err != nil {
+						if errors.Is(err, context.Canceled) {
+							return
+						}
 						if i == retry-1 {
 							logger.Error(logger.FormatError(err))
 							logger.Info(fmt.Sprintf("部门[%s]直属用户列表获取失败,终止获取", deptId))
@@ -601,20 +658,19 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 					deptNode.User = append(deptNode.User, users...)
 					err = cli.fetchDepartment(deptNode, deptId, departmentIdTypeMap[departmentIdType], userIdTypeMap[userIdType])
 					if err != nil {
-						isTerminal = true
+						isErrorOcurred = true
 						logger.Error(logger.FormatError(err))
 					}
 					break
 				}
-				if isTerminal {
+				if isErrorOcurred {
 					break
 				}
 			}
-			if isTerminal {
+			if isErrorOcurred {
 				logger.Warning("终止获取,会保存已获取数据")
 			}
 			logger.Info("正在保存至html文件...")
-
 			msg, err := cli.saveDepartmentTreeWithUsersToHTML(deptNodeList, "feishu_dump.html")
 			if err != nil {
 				logger.Error(logger.FormatError(err))
@@ -630,7 +686,6 @@ func (cli *feiShuCli) newDump() *cobra.Command {
 			} else {
 				logger.Success(msg)
 			}
-
 		},
 	}
 }
@@ -1179,13 +1234,19 @@ func (cli *feiShuCli) recursePrintDept(depts []*fs.DepartmentEntry, did, didType
 			Build()
 		deptChildren, err = FeiShuClient.Department.Children(req)
 		if err != nil {
-			if i < retry {
-				time.Sleep(FeiShuDefaultInterval)
-				continue
+			if errors.Is(err, context.Canceled) {
+				return nil
 			}
-			return err
+			if i == retry-1 {
+				return err
+			}
+			time.Sleep(FeiShuDefaultInterval)
+			continue
 		}
 		break
+	}
+	if HttpCanceled {
+		return nil
 	}
 	var length = len(deptChildren)
 	if length == 0 && level == 0 {
@@ -1193,10 +1254,6 @@ func (cli *feiShuCli) recursePrintDept(depts []*fs.DepartmentEntry, did, didType
 		return nil
 	}
 	for i := 0; i < length; i++ {
-		//if verbose <= *index && verbose >= 0 {
-		//	break
-		//}
-		*index++
 		var (
 			status             string
 			name               string

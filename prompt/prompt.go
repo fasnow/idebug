@@ -2,7 +2,6 @@ package prompt
 
 import (
 	"fmt"
-	"github.com/fasnow/go-prompt"
 	"github.com/fasnow/readline"
 	"github.com/spf13/cobra"
 	"idebug/cmd"
@@ -17,11 +16,9 @@ import (
 var globalCmd = []string{"clear", "cls", "use", "update", "exit"}
 
 type Client struct {
-	module     *cmd.Module
-	proxy      *string
-	ppt        *prompt.Prompt
-	cancelChan chan bool
-	doneChan   chan bool
+	module *cmd.Module
+	proxy  *string
+	//ppt        *prompt.Prompt
 }
 
 func (client *Client) Run() {
@@ -31,27 +28,6 @@ func (client *Client) Run() {
 	cmd.Proxy = client.proxy
 	*client.module = cmd.NoModule
 	cmd.CurrentModule = client.module
-	client.cancelChan = make(chan bool, 1)
-	client.doneChan = make(chan bool, 1)
-
-	//client.ppt = prompt.New(
-	//	client.executor,
-	//	completer,
-	//	prompt.OptionPrefix(""),
-	//	prompt.OptionAddKeyBind(prompt.KeyBind{
-	//		Key: prompt.ControlC,
-	//		Fn: func(buf *prompt.Buffer) {
-	//			if runtime.GOOS != "windows" {
-	//				cmd := exec.Command("reset")
-	//				err := cmd.Run()
-	//				if err != nil {
-	//					logger.Error(logger.FormatError(err))
-	//				}
-	//			}
-	//			os.Exit(0)
-	//		},
-	//	}),
-	//)
 	line, err := readline.NewEx(&readline.Config{})
 	if err != nil {
 		logger.Error(logger.FormatError(err))
@@ -59,29 +35,31 @@ func (client *Client) Run() {
 	}
 	line.Config.Stdout = logger.Writer
 	line.HistoryEnable()
-	line.Config.InterruptPrompt = ""
-	go client.listener()
+	go client.ctrlCListener()
 	for {
 		line.SetPrompt(logger.ModuleSelectedV2(string(*client.module)))
 		input, err := line.Readline()
-		if err != nil && err.Error() != "Interrupt" {
-			logger.Error(logger.FormatError(err))
+		if err != nil {
+			if err.Error() != "Interrupt" {
+				logger.Error(logger.FormatError(err))
+			}
 			continue
 		}
-		client.exec(input)
+		client.executor(input)
 	}
 }
 
 func (client *Client) executor(in string) {
+	cmd.SetContext()
 	go func() {
 		client.exec(in)
-		client.doneChan <- true
+		cmd.Cancel()
 	}()
-	select {
-	case <-client.cancelChan:
-		return
-	case <-client.doneChan:
-		return
+	for {
+		select {
+		case <-cmd.Context.Done():
+			return
+		}
 	}
 }
 
@@ -113,23 +91,17 @@ func (client *Client) exec(in string) {
 	return
 }
 
-func (client *Client) livePrefix() (string, bool) {
-	return logger.ModuleSelectedV3(string(*client.module)), true
-}
-
-func (client *Client) listener() {
-	// 创建一个通道来接收中断信号
+func (client *Client) ctrlCListener() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
-	// 启动一个 goroutine 来监听中断信号
 	go func() {
 		for {
-			<-interrupt  // 接收http中断信号
-			cmd.Cancel() // 中断http请求
-			client.cancelChan <- true
+			<-interrupt  // 接收ctrl+c中断信号
+			cmd.Cancel() // 取消http上下文
+			if !cmd.HttpCanceled {
+				cmd.HttpCanceled = true
+			}
 		}
 	}()
-	// 等待程序终止信号
 	select {}
 }

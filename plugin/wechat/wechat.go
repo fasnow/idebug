@@ -126,6 +126,10 @@ func (client *Client) SetContext(ctx *context.Context) {
 	client.http.Context = ctx
 }
 
+func (client *Client) StopWhenContextCanceled(enable bool) {
+	client.http.StopWhenContextCanceled = enable
+}
+
 func (client *Client) Set(corpId, corpSecret string) {
 	conf := &config{
 		CorpId:     &corpId,

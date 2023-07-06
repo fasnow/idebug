@@ -25,8 +25,8 @@ const (
 )
 
 var (
-	ModuleChangedCh       *chan bool
-	ctx, Cancel           = context.WithCancel(context.Background())
+	Context               context.Context
+	Cancel                context.CancelFunc
 	HttpCanceled          bool
 	CurrentModule         *Module
 	WxClient              *wechat.Client
@@ -106,18 +106,26 @@ func (cli *mainCli) newExit() *cobra.Command {
 		Use:   "exit",
 		Short: `退出模块或者程序`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if *CurrentModule != NoModule {
-				*CurrentModule = NoModule
-			} else {
-				if runtime.GOOS != "windows" {
-					cmd := exec.Command("reset")
-					err := cmd.Run()
-					if err != nil {
-						logger.Error(logger.FormatError(err))
-					}
+			//if *CurrentModule != NoModule {
+			//	*CurrentModule = NoModule
+			//} else {
+			//	if runtime.GOOS != "windows" {
+			//		cmd := exec.Command("reset")
+			//		err := cmd.Run()
+			//		if err != nil {
+			//			logger.Error(logger.FormatError(err))
+			//		}
+			//	}
+			//	os.Exit(0)
+			//}
+			if runtime.GOOS != "windows" {
+				cmd := exec.Command("reset")
+				err := cmd.Run()
+				if err != nil {
+					logger.Error(logger.FormatError(err))
 				}
-				os.Exit(0)
 			}
+			os.Exit(0)
 		},
 	}
 }
@@ -167,9 +175,9 @@ func (cli *mainCli) newUpdate() *cobra.Command {
 		Use:   `update`,
 		Short: `检查更新`,
 		Run: func(cmd *cobra.Command, args []string) {
-			version, releaseUrl, content := CheckUpdate()
+			version, releaseUrl, publishTime, content := CheckUpdate()
 			if version != "" {
-				s := "最新版本: " + version
+				s := fmt.Sprintf("最新版本: %s %s", version, publishTime)
 				s += "\n    下载地址: " + releaseUrl
 				s += "\n    更新内容: " + content
 				logger.Notice(s)
@@ -208,14 +216,12 @@ func (cli *mainCli) newUse() *cobra.Command {
 				*CurrentModule = FeiShuModule
 				if FeiShuClient == nil {
 					FeiShuClient = fs.NewClient()
-					FeiShuClient.SetContext(&ctx)
 				}
 				break
 			case WxModule:
 				*CurrentModule = WxModule
 				if WxClient == nil {
 					WxClient = wechat.NewWxClient()
-					WxClient.SetContext(&ctx)
 				}
 				break
 			default:
@@ -376,4 +382,19 @@ func reset() {
 	password = ""
 	recurse = false
 	verbose = -1
+	HttpCanceled = false
+}
+
+func SetContext() {
+	ctx, cancel := context.WithCancel(context.Background())
+	Context = ctx
+	Cancel = cancel
+	switch *CurrentModule {
+	case WxModule:
+		WxClient.SetContext(&ctx)
+		WxClient.StopWhenContextCanceled(true)
+	case FeiShuModule:
+		FeiShuClient.SetContext(&ctx)
+		FeiShuClient.StopWhenContextCanceled(true)
+	}
 }

@@ -6,7 +6,7 @@ require (
 	github.com/buger/jsonparser v1.1.1
 	github.com/chzyer/readline v1.5.1
 	github.com/coreos/go-semver v0.3.1
-	github.com/fasnow/ghttp v0.0.8
+	github.com/fasnow/ghttp v0.0.9
 	github.com/fasnow/go-prompt v0.0.2
 	github.com/fasnow/readline v0.0.0-2023070501
 	github.com/larksuite/oapi-sdk-go/v3 v3.0.23
