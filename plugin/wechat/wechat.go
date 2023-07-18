@@ -115,10 +115,14 @@ type Client struct {
 
 func NewWxClient() *Client {
 	client := &Client{
-		config: &config{},
-		cache:  utils.NewCache(3 * time.Second),
-		http:   &ghttp.Client{},
+		config:     &config{},
+		cache:      utils.NewCache(3 * time.Second),
+		http:       &ghttp.Client{},
+		User:       &user{},
+		Department: &department{},
 	}
+	client.User.client = client
+	client.Department.client = client
 	return client
 }
 

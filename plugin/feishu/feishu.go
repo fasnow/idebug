@@ -54,10 +54,14 @@ type Client struct {
 
 func NewClient() *Client {
 	f := &Client{
-		config: &config{},
-		cache:  utils.NewCache(3 * time.Second),
-		http:   &ghttp.Client{},
+		config:     &config{},
+		cache:      utils.NewCache(3 * time.Second),
+		http:       &ghttp.Client{},
+		User:       &user{},
+		Department: &department{},
 	}
+	f.User.client = f
+	f.Department.client = f
 	return f
 }
 

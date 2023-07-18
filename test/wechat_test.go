@@ -6,6 +6,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/fasnow/ghttp"
+	"github.com/fasnow/go-prompt"
 	"idebug/plugin/wechat"
 	"testing"
 )
@@ -19,6 +20,7 @@ func TestGetAccessToken(t *testing.T) {
 		return
 	}
 	t.Log(token)
+	prompt.Option()
 }
 
 func TestGetDepartment(t *testing.T) {

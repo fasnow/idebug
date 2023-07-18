@@ -15,16 +15,12 @@ github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fasnow/ghttp v0.0.8 h1:ZRp3fLc87Rhg+pqjQrAos6LY/P7fHQ/1l+xa86MX/bY=
-github.com/fasnow/ghttp v0.0.8/go.mod h1:FhjXn9lR5qcoG3XsbdgBjBqqQ8KFOn4CasqS6GD4GfE=
 github.com/fasnow/ghttp v0.0.9 h1:LsFVwRFeep4VGq/V23OSTvBCbuNnADYu+WvKN3M+JKI=
 github.com/fasnow/ghttp v0.0.9/go.mod h1:FhjXn9lR5qcoG3XsbdgBjBqqQ8KFOn4CasqS6GD4GfE=
 github.com/fasnow/go-prompt v0.0.2 h1:DWc0x92g/39gjEqiSow1KP7faWlVJ45rfjrZj24Fdt4=
 github.com/fasnow/go-prompt v0.0.2/go.mod h1:NHz7oCaGdmmtHxNGn0xf/HyX52tAS0nKksFf2gRMAs4=
 github.com/fasnow/readline v0.0.0-2023070501 h1:ihC0BLzInOjx7I0A88I1s2bWaZAqRHPsTcOj7oMElnk=
 github.com/fasnow/readline v0.0.0-2023070501/go.mod h1:WENUG0hqY/pslQ03uWJBBeRMVZbLqwNEXQ1GoBXD0u4=
-github.com/fasnow/readline v0.0.0-20230705071857-e90fa8481a45 h1:7t5tlKHeaqLO4DOAE+G35/NxBG9EwNdKKAu+ZldEADM=
-github.com/fasnow/readline v0.0.0-20230705071857-e90fa8481a45/go.mod h1:WENUG0hqY/pslQ03uWJBBeRMVZbLqwNEXQ1GoBXD0u4=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/larksuite/oapi-sdk-go/v3 v3.0.23 h1:mn4pD4JXgzYbpc9TT0grGHPcYppYEmisKMHeTwULu5Q=
