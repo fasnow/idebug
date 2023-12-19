@@ -16,6 +16,7 @@ import (
 const wechatUsage = mainUsage + `wechat Module:
     set corpid     <corpid>      设置corpid
     set corpsecret <corpsecret>  设置corpsecret
+    set token      <token>       设置access_token,与set corpid和set corpsecret互斥
     run                          获取access_token
     dp             <did>         根据<did>查看部门详情  
     dp ls          <did>         根据<did>递归获取子部门id,不提供<did>则递归获取默认部门
@@ -25,6 +26,7 @@ const wechatUsage = mainUsage + `wechat Module:
     dump           <did>         根据<did>递归导出部门用户,不提供<did>则递归获取默认部门
 `
 
+// set domain     <domain>      设置接口域名,默认值为官方接口【https://qyapi.weixin.qq.com】,自建企业微信使用该方法设置
 type wechatCli struct {
 	Root       *cobra.Command
 	info       *cobra.Command
@@ -32,6 +34,8 @@ type wechatCli struct {
 	set        *cobra.Command
 	corpId     *cobra.Command
 	corpSecret *cobra.Command
+	token      *cobra.Command
+	domain     *cobra.Command
 	dp         *cobra.Command
 	dpLs       *cobra.Command
 	dpTree     *cobra.Command
@@ -48,6 +52,7 @@ func NewWechatCli() *wechatCli {
 	cli.set = cli.newSet()
 	cli.corpId = cli.newCorpId()
 	cli.corpSecret = cli.newCorpSecret()
+	cli.domain = cli.newBaseDomain()
 	cli.dp = cli.newDp()
 	cli.dpLs = cli.newDpLs()
 	cli.dpTree = cli.newDpTree()
@@ -67,6 +72,7 @@ func (cli *wechatCli) init() {
 
 	cli.set.AddCommand(cli.corpId)
 	cli.set.AddCommand(cli.corpSecret)
+	cli.set.AddCommand(cli.domain)
 	cli.set.AddCommand(newProxy())
 	cli.dp.AddCommand(cli.dpLs, cli.dpTree)
 	cli.user.AddCommand(cli.userLs)
@@ -97,15 +103,24 @@ func (cli *wechatCli) newRun() *cobra.Command {
 		Short: `根据设置获取access_token`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			conf := WxClient.GetConfig()
-			if conf.CorpId == nil || *conf.CorpId == "" {
-				return fmt.Errorf("请先设置corpid")
+			if conf.AccessToken != nil && *conf.AccessToken != "" {
+				return nil
+			} else {
+				if conf.CorpId == nil || *conf.CorpId == "" {
+					return fmt.Errorf("请先设置corpid")
+				}
+				if conf.CorpSecret == nil || *conf.CorpSecret == "" {
+					return fmt.Errorf("请先设置corpsecret")
+				}
+				return nil
 			}
-			if conf.CorpSecret == nil || *conf.CorpSecret == "" {
-				return fmt.Errorf("请先设置corpsecret")
-			}
-			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
+			conf := WxClient.GetConfig()
+			if conf.AccessToken != nil && *conf.AccessToken != "" {
+				cli.showClientConfig()
+				return
+			}
 			_, err := WxClient.GetAccessToken()
 			if err != nil {
 				if errors.Is(err, context.Canceled) {
@@ -126,6 +141,24 @@ func (cli *wechatCli) newSet() *cobra.Command {
 	return &cobra.Command{
 		Use:   "set",
 		Short: `设置参数`,
+	}
+}
+
+func (cli *wechatCli) newBaseDomain() *cobra.Command {
+	return &cobra.Command{
+		Use:   "domain",
+		Short: `设置接口域名,默认值为官方接口【https://qyapi.weixin.qq.com】,自建企业微信使用该方法设置`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) < 1 {
+				logger.Warning("请提供一个值")
+				return
+			}
+			if strings.HasSuffix(args[0], "/") {
+				args[0] = args[0][0 : len(args[0])-1]
+			}
+			wechat.SetBaseDomain(args[0])
+			logger.Success("domain => " + args[0])
+		},
 	}
 }
 
@@ -156,6 +189,21 @@ func (cli *wechatCli) newCorpSecret() *cobra.Command {
 			WxClient.SetCorpSecret(args[0])
 			logger.Success("corpsecret => " + args[0])
 			return nil
+		},
+	}
+}
+
+func (cli *wechatCli) newToken() *cobra.Command {
+	return &cobra.Command{
+		Use:   "token",
+		Short: `设置access_token,与set corpid和set corpsecret互斥`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) < 1 {
+				logger.Warning("请提供一个值")
+				return
+			}
+			WxClient.SetAccessToken(args[0])
+			logger.Success("access_token => " + args[0])
 		},
 	}
 }
@@ -560,6 +608,7 @@ func (cli *wechatCli) showClientConfig() {
 	} else {
 		fmt.Println(fmt.Sprintf("%-17s: %s", "proxy", *Proxy))
 	}
+	fmt.Println(fmt.Sprintf("%-17s: %s", "domain", wechat.GetBaseDomain()))
 	if wxClientConfig.CorpId == nil {
 		fmt.Println(fmt.Sprintf("%-17s: %s", "corpid", ""))
 	} else {

@@ -65,7 +65,7 @@ func (d *department) Get(req *GetDepartmentReq) (*DepartmentEntry, error) {
 	params := url.Values{}
 	params.Add("access_token", token)
 	params.Add("id", id)
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", getDepartmentUrl, params.Encode()), nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", api.getDepartmentUrl, params.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (d *department) GetList(req *GetDepartmentListReq) ([]*DepartmentEntry, err
 	if id != "" {
 		params.Add("id", id)
 	}
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", getDepartmentListUrl, params.Encode()), nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", api.getDepartmentListUrl, params.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ func (d *department) GetIdList(req *GetDepartmentIdListReq) ([]*DepartmentEntryS
 		ErrMsg     string                       `json:"errmsg"`
 		Department []*DepartmentEntrySimplified `json:"department_id"`
 	}
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", getDepartmentIdListUrl, params.Encode()), nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", api.getDepartmentIdListUrl, params.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}

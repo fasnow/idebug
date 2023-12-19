@@ -116,7 +116,7 @@ func (u *user) Get(req *GetUserReq) (*UserEntry, error) {
 	params := url.Values{}
 	params.Add("access_token", token)
 	params.Add("userid", id)
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", getUserUrl, params.Encode()), nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", api.getUserUrl, params.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func (u *user) GetUsersByDepartmentId(req *GetUsersByDepartmentIdReq) ([]*UserEn
 	if fetch == "1" {
 		params.Add("fetch_child", fetch)
 	}
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", getDepartmentUserUrl, params.Encode()), nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", api.getDepartmentUserUrl, params.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +281,7 @@ func (u *user) GetUsersSimplifiedByDepartmentId(req *GetUsersSimplifiedByDepartm
 	if fetch == "1" {
 		params.Add("fetch_child", fetch)
 	}
-	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", getDepartmentSimpleUserUrl, params.Encode()), nil)
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s?%s", api.getDepartmentSimpleUserUrl, params.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}
